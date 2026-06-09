@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Custom Kolor untuk Dashboard & POS */
+  --color-pos-sidebar: #1e1e2f;
+  --color-pos-sidebar-hover: #29293f;
+  --color-pos-accent: #3b82f6;
+  --color-pos-accent-hover: #2563eb;
+  --color-pos-bg: #f8fafc;
+}
+
+@layer base {
+  body {
+    @apply bg-pos-bg text-gray-900 font-sans antialiased;
+  }
+}
+
+/* Utilities for Layout */
+.flex-col-center {
+  @apply flex flex-col items-center justify-center;
+}
+
+/* Print Styles for Receipt */
+@media print {
+  body {
+    background-color: white !important;
+  }
+  aside, header {
+    display: none !important;
+  }
+  main {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+  .printable-area {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}

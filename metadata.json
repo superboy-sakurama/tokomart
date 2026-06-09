@@ -1,0 +1,6 @@
+{
+  "name": "Wakhid Mart & Store",
+  "description": "Sistem Kasir (POS) dan Manajemen Toko dengan fitur multi-user, dashboard keuangan, dan invoice terintegrasi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
