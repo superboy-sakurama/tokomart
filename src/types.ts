@@ -28,7 +28,7 @@ export interface Customer {
   created_at?: string;
 }
 
-export type PaymentMethod = 'CASH' | 'DEBIT' | 'QRIS' | 'TRANSFER';
+export type PaymentMethod = 'CASH' | 'DEBIT' | 'QRIS' | 'TRANSFER' | 'HUTANG';
 
 export interface Transaction {
   id: string; // UUID
@@ -37,7 +37,7 @@ export interface Transaction {
   payment_method: PaymentMethod;
   customer_id: string | null;
   user_id: string; // ID Kasir
-  status: 'COMPLETED' | 'REFUNDED';
+  status: 'COMPLETED' | 'REFUNDED' | 'UNPAID';
   created_at?: string;
 }
 
