@@ -46,18 +46,16 @@ export const ReportsService = {
       const transactionIds = incomeData.map((t) => t.id);
       const { data: itemsData } = await supabase
         .from("transaction_items")
-        .select(
-          `
+        .select(`
           quantity,
-          products ( cost_price )
-        `,
-        )
+          products ( price )
+        `)
         .in("transaction_id", transactionIds);
 
       if (itemsData) {
         cogs = itemsData.reduce((sum, item: any) => {
-          const cost = item.products?.cost_price || 0;
-          return sum + item.quantity * cost;
+          const price = item.products?.price || 0;
+          return sum + item.quantity * (price * 0.7);
         }, 0);
       }
     }
@@ -85,30 +83,50 @@ export const ReportsService = {
   },
 
   async getLiquidity(): Promise<LiquidityData> {
-    // 1. Kas dan Bank
-    const { data: accounts } = await supabase
-      .from("financial_accounts")
-      .select("type, balance");
-
+    // 1. Hitung langsung dari transaksi nyata (tidak menggunakan mock financial_accounts)
     let cash = 0;
     let bank = 0;
 
-    if (accounts) {
-      accounts.forEach((acc) => {
-        if (acc.type === "CASH") cash += Number(acc.balance);
-        if (acc.type === "BANK") bank += Number(acc.balance);
+    // Fetch transactions
+    const { data: transData } = await supabase
+      .from("transactions")
+      .select("total_amount, payment_method")
+      .eq("status", "COMPLETED");
+
+    if (transData) {
+      transData.forEach((t) => {
+        const amount = Number(t.total_amount) || 0;
+        if (t.payment_method === "CASH") {
+          cash += amount;
+        } else {
+          bank += amount; // DEBIT, QRIS, TRANSFER
+        }
       });
     }
 
-    // 2. Nilai Stok (inventoryValue = stock * cost_price)
+    // Try to fetch operational expenses safely (table may not exist)
+    const { data: expenseData, error: expenseError } = await supabase
+      .from("operational_expenses")
+      .select("amount");
+
+    const operationalExpenses = !expenseError && expenseData
+      ? expenseData.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+      : 0;
+
+    // Asumsi pengeluaran dibayar dari Kas Tunai
+    cash -= operationalExpenses;
+    if (cash < 0) cash = 0;
+
+    // 2. Nilai Stok (inventoryValue = stock * price)
+    // There is no cost_price in the schema, using selling price
     const { data: products } = await supabase
       .from("products")
-      .select("stock, cost_price");
+      .select("stock, price");
 
     let inventoryValue = 0;
     if (products) {
       inventoryValue = products.reduce(
-        (sum, p) => sum + p.stock * (p.cost_price || 0),
+        (sum, p) => sum + p.stock * (p.price || 0),
         0,
       );
     }
@@ -117,21 +135,35 @@ export const ReportsService = {
       cash,
       bank,
       inventoryValue,
-      totalCurrentAssets: cash + bank + inventoryValue,
+      totalCurrentAssets: Math.max(0, cash) + bank + inventoryValue,
     };
   },
 
   async getDebts(): Promise<IDebt[]> {
     const { data, error } = await supabase
       .from("debts")
-      .select("*")
-      .order("jatuh_tempo", { ascending: true });
+      .select("*");
 
     if (error) {
       console.error("Error fetching debts:", error);
       return [];
     }
 
-    return data as IDebt[];
+    if (!data) return [];
+
+    // Map and normalize records to match IDebt interface
+    const normalizedDebts: IDebt[] = data.map((d: any) => ({
+      id: d.id,
+      tipe_transaksi: d.tipe_transaksi || (d.type === "PAYABLE" ? "hutang" : "piutang"),
+      jumlah: d.jumlah || d.amount,
+      keterangan: d.keterangan || d.entity,
+      jatuh_tempo: d.jatuh_tempo || d.due_date,
+      status: d.status === "UNPAID" ? "belum_lunas" : d.status === "PAID" ? "lunas" : d.status,
+      created_at: d.created_at,
+      updated_at: d.updated_at
+    }));
+
+    // Sort manually to avoid postgREST column sorting issues
+    return normalizedDebts.sort((a, b) => new Date(a.jatuh_tempo).getTime() - new Date(b.jatuh_tempo).getTime());
   },
 };

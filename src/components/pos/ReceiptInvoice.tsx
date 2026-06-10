@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Printer, CheckCircle } from 'lucide-react';
-import { Transaction, StoreSettings } from '../../types';
+import { Transaction, StoreSettings, AppSettings } from '../../types';
 import { SettingsService } from '../../services/settings';
+import { formatImageUrl } from '../../lib/utils';
 
 interface ReceiptInvoiceProps {
   transaction: any; // Merged type with items
@@ -11,11 +12,15 @@ interface ReceiptInvoiceProps {
 export function ReceiptInvoice({ transaction, onBack }: ReceiptInvoiceProps) {
   const { items, receipt_number, total_amount, payment_method, created_at } = transaction;
   const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
+  const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
 
   useEffect(() => {
     let mounted = true;
     SettingsService.getStoreSettings().then(data => {
       if (mounted) setStoreSettings(data);
+    });
+    SettingsService.getAppSettings().then(data => {
+      if (mounted) setAppSettings(data);
     });
     return () => { mounted = false; };
   }, []);
@@ -40,7 +45,7 @@ export function ReceiptInvoice({ transaction, onBack }: ReceiptInvoiceProps) {
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-bold transition-colors shadow-sm"
         >
           <Printer className="w-4 h-4" />
-          Cetak Struk
+          Cetak / Simpan PDF
         </button>
       </div>
 
@@ -57,6 +62,9 @@ export function ReceiptInvoice({ transaction, onBack }: ReceiptInvoiceProps) {
 
         {/* Invoice Body */}
         <div className="text-center mb-8">
+           {appSettings?.logo_url && (
+             <img src={formatImageUrl(appSettings.logo_url)} alt="Logo Toko" className="h-16 mx-auto mb-3 object-contain" />
+           )}
            <h1 className="text-2xl font-bold text-gray-900 tracking-tight uppercase">
              {storeSettings?.store_name || 'Toko Mart'}
            </h1>

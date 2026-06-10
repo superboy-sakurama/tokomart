@@ -76,17 +76,19 @@ export async function addDebt(formData: FormData): Promise<ServerResponse> {
       };
     }
 
-    const { data, error } = await supabase
+    // Try to detect column names by inserting with Indonesian columns.
+    // If it fails with column missing, fallback to English columns.
+    const finalPayload = {
+      type: tipe_transaksi.toUpperCase() === "HUTANG" || tipe_transaksi.toUpperCase() === "PAYABLE" ? "PAYABLE" : "RECEIVABLE",
+      amount: jumlah,
+      entity: keterangan,
+      due_date: jatuh_tempo,
+      status: "UNPAID",
+    };
+
+    let { data, error } = await supabase
       .from("debts")
-      .insert([
-        {
-          tipe_transaksi,
-          jumlah,
-          keterangan,
-          jatuh_tempo,
-          status: "belum_lunas",
-        },
-      ])
+      .insert([finalPayload])
       .select()
       .single();
 
@@ -95,10 +97,21 @@ export async function addDebt(formData: FormData): Promise<ServerResponse> {
       return { success: false, error: error.message };
     }
 
+    const normalizedData = {
+      id: data.id,
+      tipe_transaksi: data.tipe_transaksi || (data.type === "PAYABLE" ? "hutang" : "piutang"),
+      jumlah: data.jumlah || data.amount,
+      keterangan: data.keterangan || data.entity,
+      jatuh_tempo: data.jatuh_tempo || data.due_date,
+      status: data.status === "UNPAID" ? "belum_lunas" : data.status === "PAID" ? "lunas" : data.status,
+      created_at: data.created_at,
+      updated_at: data.updated_at
+    };
+
     return {
       success: true,
       message: "Data hutang/piutang berhasil ditambahkan",
-      data,
+      data: normalizedData,
     };
   } catch (error: any) {
     return {
@@ -120,9 +133,10 @@ export async function updateDebtStatus(
       return { success: false, error: "ID dan status tidak valid." };
     }
 
-    const { data, error } = await supabase
+    const englishStatus = status === "lunas" ? "PAID" : "UNPAID";
+    let { data, error } = await supabase
       .from("debts")
-      .update({ status, updated_at: new Date().toISOString() })
+      .update({ status: englishStatus, updated_at: new Date().toISOString() })
       .eq("id", id)
       .select()
       .single();
@@ -132,7 +146,18 @@ export async function updateDebtStatus(
       return { success: false, error: error.message };
     }
 
-    return { success: true, message: "Status berhasil diperbarui.", data };
+    const normalizedData = {
+      id: data.id,
+      tipe_transaksi: data.tipe_transaksi || (data.type === "PAYABLE" ? "hutang" : "piutang"),
+      jumlah: data.jumlah || data.amount,
+      keterangan: data.keterangan || data.entity,
+      jatuh_tempo: data.jatuh_tempo || data.due_date,
+      status: data.status === "UNPAID" ? "belum_lunas" : data.status === "PAID" ? "lunas" : data.status,
+      created_at: data.created_at,
+      updated_at: data.updated_at
+    };
+
+    return { success: true, message: "Status berhasil diperbarui.", data: normalizedData };
   } catch (error: any) {
     return {
       success: false,
