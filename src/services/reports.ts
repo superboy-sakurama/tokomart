@@ -115,7 +115,6 @@ export const ReportsService = {
 
     // Asumsi pengeluaran dibayar dari Kas Tunai
     cash -= operationalExpenses;
-    if (cash < 0) cash = 0;
 
     // 2. Nilai Stok (inventoryValue = stock * price)
     // There is no cost_price in the schema, using selling price
@@ -126,7 +125,7 @@ export const ReportsService = {
     let inventoryValue = 0;
     if (products) {
       inventoryValue = products.reduce(
-        (sum, p) => sum + p.stock * (p.price || 0),
+        (sum, p) => sum + (Number(p.stock) || 0) * (Number(p.price) || 0),
         0,
       );
     }
@@ -135,7 +134,7 @@ export const ReportsService = {
       cash,
       bank,
       inventoryValue,
-      totalCurrentAssets: Math.max(0, cash) + bank + inventoryValue,
+      totalCurrentAssets: cash + bank + inventoryValue,
     };
   },
 

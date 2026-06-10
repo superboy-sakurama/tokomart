@@ -4,7 +4,8 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   LayoutDashboard, ShoppingCart, Package, Users, 
-  FileText, Settings, LogOut, ChevronRight, UserCircle 
+  FileText, Settings, LogOut, ChevronRight, UserCircle,
+  History 
 } from 'lucide-react';
 import { cn, formatImageUrl } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
@@ -16,6 +17,7 @@ import { IUserProfile } from '../../types/user';
 const NAV_ITEMS = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
   { name: 'Kasir', path: '/pos', icon: ShoppingCart },
+  { name: 'Riwayat Transaksi', path: '/transactions', icon: History },
   { name: 'Produk', path: '/products', icon: Package },
   { name: 'Pelanggan', path: '/customers', icon: Users },
   { name: 'Laporan', path: '/reports', icon: FileText },

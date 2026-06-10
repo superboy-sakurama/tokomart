@@ -268,15 +268,28 @@ export function Settings() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="block text-sm font-semibold text-gray-700">URL Logo (Opsional)</label>
-                    <input 
-                      type="url" 
-                      placeholder="https://example.com/logo.png"
-                      value={appSettings.logo_url}
-                      onChange={(e) => setAppSettings({...appSettings, logo_url: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all" 
-                    />
-                    <p className="text-xs text-gray-500">Kosongkan untuk menggunakan icon bawaan. (Mendukung link Google Drive View)</p>
+                    <label className="block text-sm font-semibold text-gray-700">Logo Aplikasi / Toko</label>
+                    <div className="flex flex-col gap-3">
+                      {appSettings.logo_url && (
+                        <img src={appSettings.logo_url} alt="Logo Preview" className="h-20 w-20 object-contain rounded-xl border border-gray-200 bg-white" />
+                      )}
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setAppSettings({...appSettings, logo_url: reader.result as string});
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">Pilih gambar dari komputer/HP Anda. Gambar akan disimpan secara otomatis ke dalam sistem (max 2MB yang disarankan).</p>
                   </div>
                 </div>
                 <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">
