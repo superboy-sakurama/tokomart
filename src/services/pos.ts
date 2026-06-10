@@ -4,44 +4,7 @@ import { TransactionService } from './db';
 
 export const POSService = {
   async processTransaction(payload: TransactionPayload): Promise<TransactionResponse> {
-    try {
-      const response = await fetch('/api/transactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      // Parse JSON
-      let data: any;
-      try {
-        data = await response.json();
-      } catch (parseErr) {
-        // Fallback untuk environment Vite/Dev yang belum memiliki rute API Next.js terkonfigurasi.
-        if (!response.ok && response.status === 404) {
-           console.warn("Backend route not found. Executing fallback local transaction simulation.");
-           return await this.fallbackTransaction(payload);
-        }
-        throw new Error('Gagal memproses respons dari server');
-      }
-
-      if (!response.ok) {
-        throw new Error(data.error || data.message || 'Terjadi kesalahan saat memproses transaksi.');
-      }
-
-      return data as TransactionResponse;
-    } catch (error: any) {
-      if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-         console.warn("Backend not reachable. Executing fallback local transaction simulation.");
-         return await this.fallbackTransaction(payload);
-      }
-      return {
-        success: false,
-        message: 'Gagal memproses transaksi.',
-        error: error.message || String(error),
-      };
-    }
+    return await this.fallbackTransaction(payload);
   },
 
   // Fallback Service Support for Vite Preview Mode (since Next.js API won't run directly in Vite)
