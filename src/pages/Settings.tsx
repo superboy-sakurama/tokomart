@@ -276,7 +276,7 @@ export function Settings() {
                       onChange={(e) => setAppSettings({...appSettings, logo_url: e.target.value})}
                       className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all" 
                     />
-                    <p className="text-xs text-gray-500">Kosongkan untuk menggunakan icon bawaan.</p>
+                    <p className="text-xs text-gray-500">Kosongkan untuk menggunakan icon bawaan. (Mendukung link Google Drive View)</p>
                   </div>
                 </div>
                 <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">

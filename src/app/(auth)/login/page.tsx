@@ -1,8 +1,10 @@
 // src/app/(auth)/login/page.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import { AuthService } from "../../../services/auth";
+import { SettingsService } from "../../../services/settings";
+import { formatImageUrl } from "../../../lib/utils";
 import { Package, Lock, Mail, Loader2, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
@@ -10,6 +12,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [appSettings, setAppSettings] = useState({ app_name: "Wakhid Mart App", logo_url: "" });
+
+  useEffect(() => {
+    const fetchSettings = () => {
+      SettingsService.getAppSettings().then(setAppSettings);
+    };
+    fetchSettings();
+    window.addEventListener('app_settings_updated', fetchSettings);
+    return () => window.removeEventListener('app_settings_updated', fetchSettings);
+  }, []);
 
   // Note: Since this is a Vite+React App, we use React Router Dom's useNavigate
   const navigate = useNavigate();
@@ -52,11 +64,15 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center flex-col items-center">
-          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/20">
-            <Package className="w-8 h-8 text-white" />
-          </div>
+          {appSettings.logo_url ? (
+            <img src={formatImageUrl(appSettings.logo_url)} alt="Logo" className="w-16 h-16 object-contain rounded-2xl shadow-lg" />
+          ) : (
+            <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/20">
+              <Package className="w-8 h-8 text-white" />
+            </div>
+          )}
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Wakhid Mart App
+            {appSettings.app_name}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Internal Area - Authorized Personnel Only
@@ -94,7 +110,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent sm:text-sm bg-gray-50 focus:bg-white transition-colors"
-                  placeholder="admin@pos.com"
+                  placeholder="Masukkan email Anda"
                 />
               </div>
             </div>

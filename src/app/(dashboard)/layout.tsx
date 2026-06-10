@@ -6,7 +6,7 @@ import {
   LayoutDashboard, ShoppingCart, Package, Users, 
   FileText, Settings, LogOut, ChevronRight, UserCircle 
 } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { cn, formatImageUrl } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
 import { SettingsService } from '../../services/settings';
 import { AppSettings } from '../../types';
@@ -89,7 +89,7 @@ export default function DashboardLayout() {
             className="flex items-center gap-3 backdrop-blur-sm bg-white/50 p-2.5 rounded-2xl border border-white shadow-sm"
           >
             {appSettings.logo_url ? (
-              <img src={appSettings.logo_url} alt="Logo" className="w-10 h-10 object-contain rounded-xl" />
+              <img src={formatImageUrl(appSettings.logo_url)} alt="Logo" className="w-10 h-10 object-contain rounded-xl" />
             ) : (
               <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-2.5 rounded-xl shadow-inner">
                 <Package className="w-5 h-5" />
